@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  ingestion:
+    build:
+      context: ./ingestion_service
+    env_file:
+      - .env
+    volumes:
+      - data_volume:/data
+    restart: on-failure
+
+  transformation:
+    build:
+      context: ./transformation_service
+    env_file:
+      - .env
+    volumes:
+      - data_volume:/data
+    depends_on:
+      - ingestion
+    restart: on-failure
+
+  visualization:
+    build:
+      context: ./visualization_service
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    depends_on:
+      - transformation
+    restart: always
+
+volumes:
+  data_volume:
