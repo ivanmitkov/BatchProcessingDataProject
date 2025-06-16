@@ -9,16 +9,16 @@ from supabase import create_client, Client
 import requests
 import json
 
-# Load environment variables
+# env vars
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 assert SUPABASE_URL and SUPABASE_KEY, "Supabase credentials missing"
 
-# Initialize Supabase client
+# Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Helper: Run SQL via Supabase RPC
+# rpc
 def run_sql_via_rpc(sql: str):
     response = requests.post(
         f"{SUPABASE_URL}/rest/v1/rpc/execute_sql",
@@ -31,9 +31,9 @@ def run_sql_via_rpc(sql: str):
     )
     if response.status_code not in (200, 201, 204):
         raise Exception(f"RPC SQL failed: {response.status_code}, {response.text}")
-    print("✅ Ensured unique constraint on `pickup_date`.")
+    print("Ensured unique constraint on `pickup_date`.")
 
-# Step 0: Ensure unique constraint on pickup_date
+# unique constraint
 def ensure_unique_constraint():
     sql_add_constraint = """
     DO $$
@@ -50,25 +50,25 @@ def ensure_unique_constraint():
     """
     run_sql_via_rpc(sql_add_constraint)
 
-# Retry until raw_data is available
+# retry until raw_data is available
 def download_raw_data():
     MAX_WAIT_MINUTES = int(os.getenv("MAX_WAIT_MINUTES", 15))
     delay_seconds = 30
     max_attempts = (MAX_WAIT_MINUTES * 60) // delay_seconds
 
     for attempt in range(1, max_attempts + 1):
-        print(f"🔽 Attempt {attempt}/{max_attempts} to download raw_data from Supabase...")
+        print(f"Attempt {attempt}/{max_attempts} to download raw_data from Supabase...")
         response = supabase.table("raw_data").select("*").limit(1000).execute()
         data = response.data
 
         if data:
-            print(f"✅ {len(data)} rows loaded.")
+            print(f"{len(data)} rows loaded.")
             return pd.DataFrame(data)
 
-        print(f"⏳ No data yet. Retrying in {delay_seconds} seconds...")
+        print(f"No data yet. Retrying in {delay_seconds} seconds...")
         time.sleep(delay_seconds)
 
-    raise Exception(f"❌ No data found in raw_data after {MAX_WAIT_MINUTES} minutes.")
+    raise Exception(f"No data found in raw_data after {MAX_WAIT_MINUTES} minutes.")
 
 
 def spark_transform(df_pd):
@@ -89,22 +89,22 @@ def spark_transform(df_pd):
     return agg_df
 
 def get_existing_dates():
-    print("📡 Checking existing dates in Supabase...")
+    print("Checking existing dates in Supabase...")
     response = supabase.table("agg_fares_by_day").select("pickup_date").execute()
     if response.data:
         existing = set(row["pickup_date"] for row in response.data)
-        print(f"ℹ️ Found {len(existing)} existing dates.")
+        print(f"Found {len(existing)} existing dates.")
         return existing
     return set()
 
 def upload_to_output_layer(df):
-    print("⬆️ Converting Spark → Pandas for Supabase upload...")
+    print("⬆Converting Spark → Pandas for Supabase upload...")
     agg_pd = df.toPandas()
     existing_dates = get_existing_dates()
 
     agg_pd = agg_pd[~agg_pd["pickup_date"].isin(existing_dates)]
     if agg_pd.empty:
-        print("✅ No new records to upload — all pickup_dates already exist.")
+        print("No new records to upload — all pickup_dates already exist.")
         return
 
     records = []
@@ -117,14 +117,14 @@ def upload_to_output_layer(df):
         records.append(record)
 
     table = "agg_fares_by_day"
-    print(f"📤 Uploading {len(records)} new records to {table}...")
+    print(f"Uploading {len(records)} new records to {table}...")
 
     batch_size = 100
     for i in range(0, len(records), batch_size):
         batch = records[i:i + batch_size]
         supabase.table(table).upsert(batch, on_conflict="pickup_date").execute()
 
-    print(f"✅ Uploaded {len(records)} new records to {table}.")
+    print(f"Uploaded {len(records)} new records to {table}.")
 
 def main():
     ensure_unique_constraint()
