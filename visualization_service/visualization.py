@@ -4,12 +4,12 @@ import requests
 from dotenv import load_dotenv
 import os
 
-# Load credentials from .env
+# load credentials from .env
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# Fetch data from Supabase
+# fetch data from Supabase
 @st.cache_data(ttl=300)
 def fetch_data():
     url = f"{SUPABASE_URL}/rest/v1/agg_fares_by_day?select=*"
@@ -27,7 +27,7 @@ def fetch_data():
         df = df.sort_values("pickup_date")  # Sort by date
     return df
 
-# Load and display
+# load and display
 st.title("NYC Taxi Aggregated Revenue")
 
 df = fetch_data()
