@@ -38,9 +38,3 @@ The pipeline consists of three services:
 
 After processing, the dashboard shows a time series of total revenue and tips per day from the NYC taxi dataset.
 
-## Notebook Preview
-
-[Open the Preview Notebook](notebooks/preview.ipynb)
-
-![Notebook Screenshot](notebooks/preview_screenshot.png)
-
