@@ -69,7 +69,7 @@ def download_raw_data():
         time.sleep(delay_seconds)
 
     raise Exception(f"No data found in raw_data after {MAX_WAIT_MINUTES} minutes.")
-
+ 
 
 def spark_transform(df_pd):
     spark = SparkSession.builder \
