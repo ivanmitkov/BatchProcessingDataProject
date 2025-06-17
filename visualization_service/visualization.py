@@ -34,5 +34,5 @@ df = fetch_data()
 if df.empty:
     st.warning("No data available.")
 else:
-    st.dataframe(df)
+    st.dataframe(df.head(1000))
     st.line_chart(df.set_index("pickup_date")[["total_revenue", "total_tips"]])

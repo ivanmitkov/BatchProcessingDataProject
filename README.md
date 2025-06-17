@@ -38,3 +38,14 @@ The pipeline consists of three services:
 
 After processing, the dashboard shows a time series of total revenue and tips per day from the NYC taxi dataset.
 
+## Sample Output
+
+Here is an example of the dashboard:
+
+![Dashboard Screenshot](screenshots/dashboard_example.png)
+
+Below is a sample of data loaded into Supabase:
+
+![Supabase Table Raw Data](screenshots/supabase_raw_data.png)
+
+![Supabase Table Prepared Data](screenshots/supabase_raw_data.png)
